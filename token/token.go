@@ -14,10 +14,26 @@ const (
 	// INT is a token type for integers.
 	INT = "INT"
 
+	// BANG is a token type for NOT operator.
+	BANG = "!"
 	// ASSIGN is a token type for assignment operators.
 	ASSIGN = "="
 	// PLUS is a token type for addition.
 	PLUS = "+"
+	// MINUS is a token type for substraction.
+	MINUS = "-"
+	// ASTARISK is a token type for multiplication.
+	ASTARISK = "*"
+	// SLASH is a token type for division.
+	SLASH = "/"
+	// LT is a token ype for 'less than' operator.
+	LT = "<"
+	// GT is a token ype for 'greater than' operator.
+	GT = ">"
+	// EQ is a token type for equality operator.
+	EQ = "=="
+	// NEQ is a token type for not equality operator.
+	NEQ = "!="
 
 	// COMMA is a token type for commas.
 	COMMA = ","
@@ -37,6 +53,16 @@ const (
 	FUNCTION = "FUNCTION"
 	// LET is a token type for lets.
 	LET = "LET"
+	// TRUE is a token type for true.
+	TRUE = "TRUE"
+	// FALSE is a token type for false.
+	FALSE = "FALSE"
+	// IF is a token type for if.
+	IF = "IF"
+	// ELSE is a token type for else.
+	ELSE = "ELSE"
+	// RETURN is a token type for return.
+	RETURN = "RETURN"
 )
 
 // Token represents a token which has a token type and literal.
@@ -47,8 +73,13 @@ type Token struct {
 
 // Language keywords
 var keywords = map[string]Type{
-	"fn":  FUNCTION,
-	"let": LET,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // LookupIdent checks the language keywords to see whether the given identifier is a keyword.
