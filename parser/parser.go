@@ -8,22 +8,50 @@ import (
 	"github.com/skatsuta/monkey-interpreter/token"
 )
 
+const (
+	_ int = iota
+	// LOWEST represents the lowest precedence.
+	LOWEST
+	// EQUALS represents precedence of equals.
+	EQUALS // ==
+	// LESSGREATER represents precedence of less than or greater than.
+	LESSGREATER // > or <
+	// SUM represents precedence of sum.
+	SUM // +
+	// PRODUCT represents precedence of product.
+	PRODUCT // *
+	// PREFIX represents precedence of prefix operator.
+	PREFIX // -X or !X
+	// CALL represents precedence of function call.
+	CALL // myFunc(X)
+)
+
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func(ast.Expression) ast.Expression
+)
+
 // Parser is a Monkey's parser.
 type Parser struct {
-	l *lexer.Lexer
+	l      *lexer.Lexer
+	errors []string
 
 	curToken  token.Token
 	peekToken token.Token
 
-	errors []string
+	prefixParseFns map[token.Type]prefixParseFn
+	infixParseFns  map[token.Type]infixParseFn
 }
 
 // New returns a new Parser.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
-		l:      l,
-		errors: []string{},
+		l:              l,
+		errors:         []string{},
+		prefixParseFns: make(map[token.Type]prefixParseFn),
 	}
+
+	p.registerPrefix(token.IDENT, p.parseIdent)
 
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -71,7 +99,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -130,4 +158,42 @@ func (p *Parser) expectPeek(typ token.Type) bool {
 
 	p.peekError(typ)
 	return false
+}
+
+func (p *Parser) registerPrefix(tokenType token.Type, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.Type, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{
+		Token:      p.curToken,
+		Expression: p.parseExpression(LOWEST),
+	}
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		return nil
+	}
+	leftExp := prefix()
+
+	return leftExp
+}
+
+func (p *Parser) parseIdent() ast.Expression {
+	return &ast.Ident{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
+	}
 }
