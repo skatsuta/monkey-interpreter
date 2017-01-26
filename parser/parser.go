@@ -31,9 +31,9 @@ type (
 	infixParseFn  func(ast.Expression) ast.Expression
 )
 
-// Parser is a Monkey's parser.
+// Parser is a parser of Monkey programming language.
 type Parser struct {
-	l      *lexer.Lexer
+	l      lexer.Lexer
 	errors []string
 
 	curToken  token.Token
@@ -44,7 +44,7 @@ type Parser struct {
 }
 
 // New returns a new Parser.
-func New(l *lexer.Lexer) *Parser {
+func New(l lexer.Lexer) *Parser {
 	p := &Parser{
 		l:              l,
 		errors:         []string{},

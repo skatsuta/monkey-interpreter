@@ -2,8 +2,13 @@ package lexer
 
 import "github.com/skatsuta/monkey-interpreter/token"
 
-// Lexer is a lexer for Monkey programming language.
-type Lexer struct {
+// Lexer represents a lexer for Monkey programming language.
+type Lexer interface {
+	// NextToken returns a next token.
+	NextToken() token.Token
+}
+
+type lexer struct {
 	input string
 	// current position in input (points to current char)
 	position int
@@ -13,14 +18,14 @@ type Lexer struct {
 	ch byte
 }
 
-// New returns a new lexer.
-func New(input string) *Lexer {
-	l := &Lexer{input: input}
+// New returns a new Lexer.
+func New(input string) Lexer {
+	l := &lexer{input: input}
 	l.readChar()
 	return l
 }
 
-func (l *Lexer) readChar() {
+func (l *lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
@@ -30,8 +35,7 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
-// NextToken returns a next token.
-func (l *Lexer) NextToken() token.Token {
+func (l *lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	var tok token.Token
@@ -102,21 +106,21 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
-func (l *Lexer) skipWhitespace() {
+func (l *lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
-func (l *Lexer) readIdent() string {
+func (l *lexer) readIdent() string {
 	return l.read(isLetter)
 }
 
-func (l *Lexer) readNumber() string {
+func (l *lexer) readNumber() string {
 	return l.read(isDigit)
 }
 
-func (l *Lexer) read(checkFn func(byte) bool) string {
+func (l *lexer) read(checkFn func(byte) bool) string {
 	position := l.position
 	for checkFn(l.ch) {
 		l.readChar()
@@ -124,7 +128,7 @@ func (l *Lexer) read(checkFn func(byte) bool) string {
 	return l.input[position:l.position]
 }
 
-func (l *Lexer) peekChar() byte {
+func (l *lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
 	}
