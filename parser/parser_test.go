@@ -115,45 +115,33 @@ func TestReturnStatement(t *testing.T) {
 func TestIdentifierExpression(t *testing.T) {
 	input := "foobar"
 
-	l := lexer.New(input)
-	p := New(l)
+	p := New(lexer.New(input))
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	length := len(program.Statements)
-	if length != 1 {
-		t.Fatalf("program has not enough statements. got=%d", length)
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program has not enough statements. got=%d", l)
 	}
 
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
-			program.Statements[0])
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
 	}
 
-	ident, ok := stmt.Expression.(*ast.Ident)
-	if !ok {
-		t.Fatalf("exp not *ast.Ident. got=%T", stmt.Expression)
-	}
-	if ident.Value != input {
-		t.Errorf("ident.Value not %s. got=%s", input, ident.Value)
-	}
-	if ident.TokenLiteral() != input {
-		t.Errorf("ident.TokenLiteral() not %s. got=%s", input, ident.TokenLiteral())
-	}
+	testIdent(t, stmt.Expression, input)
 }
 
 func TestIntegerExpression(t *testing.T) {
 	input := "5;"
 
-	l := lexer.New(input)
-	p := New(l)
+	p := New(lexer.New(input))
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	length := len(program.Statements)
-	if length != 1 {
-		t.Fatalf("program has not enough statements. got=%d", length)
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program has not enough statements. got=%d", l)
 	}
 
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
@@ -162,16 +150,7 @@ func TestIntegerExpression(t *testing.T) {
 			program.Statements[0])
 	}
 
-	literal, ok := stmt.Expression.(*ast.IntegerLiteral)
-	if !ok {
-		t.Fatalf("exp not *ast.IntegerLiteral. got=%T", stmt.Expression)
-	}
-	if literal.Value != 5 {
-		t.Errorf("literal.Value not %d. got=%d", 5, literal.Value)
-	}
-	if literal.TokenLiteral() != "5" {
-		t.Errorf("literal.TokenLiteral() not %s. got=%s", input, literal.TokenLiteral())
-	}
+	testIntegerLiteral(t, stmt.Expression, 5)
 }
 
 func TestParsingPrefixExpressions(t *testing.T) {
@@ -228,6 +207,48 @@ func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) {
 	}
 }
 
+func testIdent(t *testing.T, expr ast.Expression, value string) {
+	ident, ok := expr.(*ast.Ident)
+	if !ok {
+		t.Errorf("expr not *ast.Ident. got=%T", expr)
+	}
+	if ident.Value != value {
+		t.Errorf("ident.Value not %s. got=%s", value, ident.Value)
+	}
+	if ident.TokenLiteral() != value {
+		t.Errorf("ident.TokenLiteral() not %s. got=%s", value, ident.TokenLiteral())
+	}
+}
+
+func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface{}) {
+	switch v := expected.(type) {
+	case int:
+		testIntegerLiteral(t, expr, int64(v))
+	case int64:
+		testIntegerLiteral(t, expr, v)
+	case string:
+		testIdent(t, expr, v)
+	default:
+		t.Errorf("type of expr not handled. got=%T", expr)
+	}
+}
+
+func testInfixExpression(t *testing.T, expr ast.Expression, left interface{}, operator string,
+	right interface{}) {
+	op, ok := expr.(*ast.InfixExpression)
+	if !ok {
+		t.Errorf("expr is not ast.OperatorExpression. got=%T(%s)", expr, expr)
+	}
+
+	testLiteralExpression(t, op.Left, left)
+
+	if op.Operator != operator {
+		t.Errorf("expr.Operator is not %q. got=%q", operator, op.Operator)
+	}
+
+	testLiteralExpression(t, op.Right, right)
+}
+
 func TestParsingInfixExpressions(t *testing.T) {
 	tests := []struct {
 		input      string
@@ -273,5 +294,37 @@ func TestParsingInfixExpressions(t *testing.T) {
 		}
 
 		testIntegerLiteral(t, expr.Right, tt.rightValue)
+	}
+}
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!-a", "(!(-a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"a + b - c", "((a + b) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * b / c", "((a * b) / c)"},
+		{"a + b / c", "(a + (b / c))"},
+		{"a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"},
+		{"3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		actual := program.String()
+		if actual != tt.expected {
+			t.Errorf("expected=%q, got=%q", tt.expected, actual)
+		}
 	}
 }
