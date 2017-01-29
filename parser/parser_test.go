@@ -330,6 +330,9 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		{"2 / (5 + 5)", "(2 / (5 + 5))"},
 		{"-(5 + 5)", "(-(5 + 5))"},
 		{"!(true == true)", "(!(true == true))"},
+		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
+		{"add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"},
+		{"add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"},
 	}
 
 	for _, tt := range tests {
@@ -544,4 +547,38 @@ func TestFunctionParameterParsing(t *testing.T) {
 			testLiteralExpression(t, f.Parameters[i], ident)
 		}
 	}
+}
+
+func TestCallFunctionParsing(t *testing.T) {
+	input := "add(1, 2 * 3, 4 + 5);"
+
+	p := New(lexer.New(input))
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d", 1, l)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	expr, ok := stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Errorf("stmt.Expression is not *ast.CallExpression. got=%T", stmt.Expression)
+	}
+
+	testIdent(t, expr.Function, "add")
+
+	l = len(expr.Arguments)
+	if l != 3 {
+		t.Fatalf("wrong length of arguments. got=%d\n", l)
+	}
+
+	testLiteralExpression(t, expr.Arguments[0], 1)
+	testInfixExpression(t, expr.Arguments[1], 2, "*", 3)
+	testInfixExpression(t, expr.Arguments[2], 4, "+", 5)
 }
