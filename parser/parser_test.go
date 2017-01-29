@@ -386,3 +386,91 @@ func TestBooleanExpression(t *testing.T) {
 		testBooleanLiteral(t, stmt.Expression, tt.expected)
 	}
 }
+
+func TestIfExpression(t *testing.T) {
+	input := "if (x < y) { x }"
+
+	p := New(lexer.New(input))
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d", 1, l)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	expr, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Errorf("stmt.Expression is not ast.Expression. got=%T", stmt.Expression)
+	}
+
+	testInfixExpression(t, expr.Condition, "x", "<", "y")
+
+	l = len(expr.Consequence.Statements)
+	if l != 1 {
+		t.Errorf("consequence is not %d statements. got=%d\n", 1, l)
+	}
+
+	cons, ok := expr.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not *ast.ExpressionStatement. got=%T",
+			expr.Consequence.Statements[0])
+	}
+
+	testIdent(t, cons.Expression, "x")
+
+	if expr.Alternative != nil {
+		t.Errorf("expr.Alternative.Statements was not nil. got=%+v", expr.Alternative)
+	}
+}
+
+func TestIfElseExpression(t *testing.T) {
+	input := "if (x < y) { x } else { y }"
+
+	p := New(lexer.New(input))
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d", 1, l)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	expr, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Errorf("stmt.Expression is not ast.Expression. got=%T", stmt.Expression)
+	}
+
+	testInfixExpression(t, expr.Condition, "x", "<", "y")
+
+	l = len(expr.Consequence.Statements)
+	if l != 1 {
+		t.Errorf("consequence is not %d statements. got=%d\n", 1, l)
+	}
+
+	cons, ok := expr.Consequence.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not *ast.ExpressionStatement. got=%T",
+			expr.Consequence.Statements[0])
+	}
+
+	testIdent(t, cons.Expression, "x")
+
+	alt, ok := expr.Alternative.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not *ast.ExpressionStatement. got=%T",
+			expr.Alternative.Statements[0])
+	}
+
+	testIdent(t, alt.Expression, "y")
+}
