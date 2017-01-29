@@ -351,7 +351,7 @@ func testBooleanLiteral(t *testing.T, expr ast.Expression, value bool) {
 		t.Errorf("b not *ast.Boolean. got=%T", expr)
 	}
 	if b.Value != value {
-		t.Errorf("b.Value not %t. got=%s", value, b.Value)
+		t.Errorf("b.Value not %t. got=%t", value, b.Value)
 	}
 	if b.TokenLiteral() != fmt.Sprintf("%t", value) {
 		t.Errorf("b.TokenLiteral() not %t. got=%s", value, b.TokenLiteral())
@@ -473,4 +473,75 @@ func TestIfElseExpression(t *testing.T) {
 	}
 
 	testIdent(t, alt.Expression, "y")
+}
+
+func TestFunctionLiteralParsing(t *testing.T) {
+	input := "fn(x, y) { x + y; }"
+
+	p := New(lexer.New(input))
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d", 1, l)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	f, ok := stmt.Expression.(*ast.FunctionLiteral)
+	if !ok {
+		t.Errorf("stmt.Expression is not *ast.FunctionLiteral. got=%T", stmt.Expression)
+	}
+
+	l = len(f.Parameters)
+	if l != 2 {
+		t.Fatalf("function literal parameters wrong. want=%d, got=%d\n", 2, l)
+	}
+
+	testLiteralExpression(t, f.Parameters[0], "x")
+	testLiteralExpression(t, f.Parameters[1], "y")
+
+	l = len(f.Body.Statements)
+	if l != 1 {
+		t.Fatalf("f.Body.Statements has not %d statements. got=%d\n", 1, l)
+	}
+
+	bodyStmt, ok := f.Body.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("f.Body.Statements[0] is not *ast.ExpressionStatement. got=%T", f.Body.Statements[0])
+	}
+
+	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
+func TestFunctionParameterParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []string
+	}{
+		{"fn() {}", []string{}},
+		{"fn(x) {};", []string{"x"}},
+		{"fn(x, y, z) {};", []string{"x", "y", "z"}},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		f := stmt.Expression.(*ast.FunctionLiteral)
+
+		if len(f.Parameters) != len(tt.expected) {
+			t.Errorf("length parameters wrong. want=%d, got=%d", len(tt.expected), len(f.Parameters))
+		}
+
+		for i, ident := range tt.expected {
+			testLiteralExpression(t, f.Parameters[i], ident)
+		}
+	}
 }
