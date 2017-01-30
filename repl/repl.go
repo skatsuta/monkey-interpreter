@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/skatsuta/monkey-interpreter/eval"
 	"github.com/skatsuta/monkey-interpreter/lexer"
 	"github.com/skatsuta/monkey-interpreter/parser"
 )
@@ -31,7 +32,12 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
+		evaluated := eval.Eval(program)
+		if evaluated == nil {
+			return
+		}
+
+		io.WriteString(out, evaluated.Inspect())
 		io.WriteString(out, "\n")
 	}
 }
