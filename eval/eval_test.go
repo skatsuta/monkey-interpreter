@@ -141,7 +141,7 @@ func TestIfExpression(t *testing.T) {
 }
 
 func testNullObject(t *testing.T, obj object.Object) {
-	if obj != NULL {
-		t.Errorf("object is not NULL. got=%#v", obj)
+	if obj != NullValue {
+		t.Errorf("object is not NullValue. got=%#v", obj)
 	}
 }

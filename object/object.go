@@ -6,12 +6,14 @@ import "strconv"
 type Type string
 
 const (
-	// INTEGER represents a type of integers.
-	INTEGER Type = "INTEGER"
-	// BOOLEAN represents a type of booleans.
-	BOOLEAN = "BOOLEAN"
-	// NULL represents a type of null.
-	NULL = "NULL"
+	// IntegerType represents a type of integers.
+	IntegerType Type = "Integer"
+	// BooleanType represents a type of booleans.
+	BooleanType = "Boolean"
+	// NullType represents a type of null.
+	NullType = "Null"
+	// ReturnValueType represents return values.
+	ReturnValueType = "ReturnValue"
 )
 
 // Object represents an object of Monkey language.
@@ -27,7 +29,7 @@ type Integer struct {
 
 // Type return the type of the Integer.
 func (i *Integer) Type() Type {
-	return INTEGER
+	return IntegerType
 }
 
 // Inspect returns a string representation of the Integer.
@@ -42,7 +44,7 @@ type Boolean struct {
 
 // Type returns the type of the Boolean.
 func (b *Boolean) Type() Type {
-	return BOOLEAN
+	return BooleanType
 }
 
 // Inspect returns a string representation of the Boolean.
@@ -55,7 +57,7 @@ type Null struct{}
 
 // Type returns the type of the Null.
 func (n *Null) Type() Type {
-	return NULL
+	return NullType
 }
 
 // Inspect returns a string representation of the Null.

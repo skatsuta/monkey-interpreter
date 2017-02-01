@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	// NULL represents a value of null reference.
-	NULL = &object.Null{}
-	// TRUE represents a value of true literals.
-	TRUE = &object.Boolean{Value: true}
-	// FALSE represents a value of false literals.
-	FALSE = &object.Boolean{Value: false}
+	// NullValue represents a value of null reference.
+	NullValue = &object.Null{}
+	// TrueValue represents a value of true literals.
+	TrueValue = &object.Boolean{Value: true}
+	// FalseValue represents a value of false literals.
+	FalseValue = &object.Boolean{Value: false}
 )
 
 // Eval evaluates the given node and returns an evaluated object.
@@ -55,9 +55,9 @@ func evalStatements(stmts []ast.Statement) object.Object {
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
-		return TRUE
+		return TrueValue
 	}
-	return FALSE
+	return FalseValue
 }
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
@@ -67,20 +67,20 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixOperatorExpression(right)
 	default:
-		return NULL
+		return NullValue
 	}
 }
 
 func evalBangOperatorExpression(right object.Object) object.Object {
-	if right == NULL || right == FALSE {
-		return TRUE
+	if right == NullValue || right == FalseValue {
+		return TrueValue
 	}
-	return FALSE
+	return FalseValue
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
-	if right.Type() != object.INTEGER {
-		return NULL
+	if right.Type() != object.IntegerType {
+		return NullValue
 	}
 
 	value := right.(*object.Integer).Value
@@ -89,14 +89,14 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
-	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
+	case left.Type() == object.IntegerType && right.Type() == object.IntegerType:
 		return evalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 	default:
-		return NULL
+		return NullValue
 	}
 }
 
@@ -122,7 +122,7 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return NULL
+		return NullValue
 	}
 }
 
@@ -134,9 +134,9 @@ func evalIfExpression(ie *ast.IfExpression) object.Object {
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative)
 	}
-	return NULL
+	return NullValue
 }
 
 func isTruthy(obj object.Object) bool {
-	return obj != NULL && obj != FALSE
+	return obj != NullValue && obj != FalseValue
 }
