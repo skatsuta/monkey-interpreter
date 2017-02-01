@@ -64,3 +64,18 @@ func (n *Null) Type() Type {
 func (n *Null) Inspect() string {
 	return "null"
 }
+
+// ReturnValue represents a return value.
+type ReturnValue struct {
+	Value Object
+}
+
+// Type returns the type of the ReturnValue.
+func (rv *ReturnValue) Type() Type {
+	return ReturnValueType
+}
+
+// Inspect returns a string representation of the ReturnValue.
+func (rv *ReturnValue) Inspect() string {
+	return rv.Value.Inspect()
+}
