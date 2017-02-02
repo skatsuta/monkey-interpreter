@@ -34,10 +34,10 @@ func Eval(node ast.Node, env object.Environment) object.Object {
 		return evalBlockStatement(node, env)
 	case *ast.LetStatement:
 		value := Eval(node.Value, env)
-		if !isError(value) {
-			env.Set(node.Name.Value, value)
+		if isError(value) {
+			return value
 		}
-		return value
+		env.Set(node.Name.Value, value)
 
 	// Expressions
 	case *ast.IntegerLiteral:
