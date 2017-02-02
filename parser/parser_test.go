@@ -54,6 +54,29 @@ func checkParserErrors(t *testing.T, p *Parser) {
 	t.FailNow()
 }
 
+func TestLetStatementErrors(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{"let = 5;"},
+		{"let x = ;"},
+		{"let x 1;"},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+
+		program := p.ParseProgram()
+		if program == nil {
+			t.Fatalf("ParseProgram() returned nil")
+		}
+
+		if len(p.Errors()) == 0 {
+			t.Errorf("parser has no errors despite invalid statements.")
+		}
+	}
+}
+
 func testLetStatement(t *testing.T, s ast.Statement, name string) {
 	if s.TokenLiteral() != "let" {
 		t.Errorf("s.TokenLiteral not 'let'. got=%q", s.TokenLiteral())
