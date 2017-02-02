@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/skatsuta/monkey-interpreter/lexer"
@@ -8,12 +9,16 @@ import (
 	"github.com/skatsuta/monkey-interpreter/parser"
 )
 
-func testEval(input string) object.Object {
+func testEval(t *testing.T, input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
-	env := object.NewEnvironment()
 
+	if len(p.Errors()) > 0 {
+		t.Fatalf("input %q has errors: \n%v", input, strings.Join(p.Errors(), "\n"))
+	}
+
+	env := object.NewEnvironment()
 	return Eval(program, env)
 }
 
@@ -50,7 +55,7 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
@@ -93,7 +98,7 @@ func TestEvalBooleanExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
 	}
 }
@@ -112,7 +117,7 @@ func TestBangOperator(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testBooleanObject(t, evaluated, tt.expected)
 	}
 }
@@ -132,7 +137,7 @@ func TestIfExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		if i, ok := tt.expected.(int); ok {
 			testIntegerObject(t, evaluated, int64(i))
 		} else {
@@ -168,7 +173,7 @@ func TestReturnStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
@@ -197,7 +202,7 @@ func TestErrorHandling(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 
 		errObj, ok := evaluated.(*object.Error)
 		if !ok {
@@ -223,7 +228,7 @@ func TestLetStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		evaluated := testEval(tt.input)
+		evaluated := testEval(t, tt.input)
 		testIntegerObject(t, evaluated, tt.expected)
 	}
 }
