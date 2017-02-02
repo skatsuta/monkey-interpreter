@@ -7,6 +7,7 @@ import (
 
 	"github.com/skatsuta/monkey-interpreter/eval"
 	"github.com/skatsuta/monkey-interpreter/lexer"
+	"github.com/skatsuta/monkey-interpreter/object"
 	"github.com/skatsuta/monkey-interpreter/parser"
 )
 
@@ -15,6 +16,7 @@ const prompt = ">> "
 // Start starts Monkey REPL.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Printf(prompt)
@@ -32,7 +34,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := eval.Eval(program)
+		evaluated := eval.Eval(program, env)
 		if evaluated == nil {
 			return
 		}
