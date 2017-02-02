@@ -12,8 +12,10 @@ const (
 	BooleanType = "Boolean"
 	// NullType represents a type of null.
 	NullType = "Null"
-	// ReturnValueType represents return values.
+	// ReturnValueType represents a type of return values.
 	ReturnValueType = "ReturnValue"
+	// ErrorType represents a type of errors.
+	ErrorType = "Error"
 )
 
 // Object represents an object of Monkey language.
@@ -78,4 +80,19 @@ func (rv *ReturnValue) Type() Type {
 // Inspect returns a string representation of the ReturnValue.
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
+}
+
+// Error represents an error.
+type Error struct {
+	Message string
+}
+
+// Type returns the type of the Error.
+func (e *Error) Type() Type {
+	return ErrorType
+}
+
+// Inspect returns a string representation of the Error.
+func (e *Error) Inspect() string {
+	return "Error:" + e.Message
 }
