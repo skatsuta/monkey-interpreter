@@ -1,6 +1,12 @@
 package object
 
-import "strconv"
+import (
+	"bytes"
+	"strconv"
+	"strings"
+
+	"github.com/skatsuta/monkey-interpreter/ast"
+)
 
 // Type is a type of objects.
 type Type string
@@ -16,6 +22,8 @@ const (
 	ReturnValueType = "ReturnValue"
 	// ErrorType represents a type of errors.
 	ErrorType = "Error"
+	// FunctionType represents a type of functions.
+	FunctionType = "Function"
 )
 
 // Object represents an object of Monkey language.
@@ -95,4 +103,34 @@ func (e *Error) Type() Type {
 // Inspect returns a string representation of the Error.
 func (e *Error) Inspect() string {
 	return "Error:" + e.Message
+}
+
+// Function represents a function.
+type Function struct {
+	Parameters []*ast.Ident
+	Body       *ast.BlockStatement
+	Env        Environment
+}
+
+// Type returns the type of the Function.
+func (f *Function) Type() Type {
+	return FunctionType
+}
+
+// Inspect returns a string representation of the Function.
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+
+	params := make([]string, 0, len(f.Parameters))
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("fn(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
 }

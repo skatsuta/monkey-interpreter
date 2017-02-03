@@ -55,17 +55,31 @@ func Eval(node ast.Node, env object.Environment) object.Object {
 		if isError(left) {
 			return left
 		}
-
 		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
-
 		return evalInfixExpression(node.Operator, left, right)
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 	case *ast.Ident:
 		return evalIdent(node, env)
+	case *ast.FunctionLiteral:
+		return &object.Function{
+			Parameters: node.Parameters,
+			Body:       node.Body,
+			Env:        env,
+		}
+	case *ast.CallExpression:
+		function := Eval(node.Function, env)
+		if isError(function) {
+			return function
+		}
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+		return applyFunction(function, args)
 	}
 
 	return nil
@@ -211,4 +225,46 @@ func evalIdent(node *ast.Ident, env object.Environment) object.Object {
 		return val
 	}
 	return newError("identifier not found: %s", node.Value)
+}
+
+func evalExpressions(exprs []ast.Expression, env object.Environment) []object.Object {
+	result := make([]object.Object, 0, len(exprs))
+
+	for _, expr := range exprs {
+		evaluated := Eval(expr, env)
+		if isError(evaluated) {
+			return []object.Object{evaluated}
+		}
+		result = append(result, evaluated)
+	}
+
+	return result
+}
+
+func extendFunctionEnv(fn *object.Function, args []object.Object) object.Environment {
+	env := object.NewEnclosedEnvironment(fn.Env)
+
+	for i, param := range fn.Parameters {
+		env.Set(param.Value, args[i])
+	}
+
+	return env
+}
+
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		newError("not a function: %s", fn.Type())
+	}
+
+	extendedEnv := extendFunctionEnv(function, args)
+	evaluated := Eval(function.Body, extendedEnv)
+	return unwrapReturnValue(evaluated)
+}
+
+func unwrapReturnValue(obj object.Object) object.Object {
+	if returnValue, ok := obj.(*object.ReturnValue); ok {
+		return returnValue.Value
+	}
+	return obj
 }
