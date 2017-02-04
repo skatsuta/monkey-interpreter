@@ -63,6 +63,9 @@ const (
 	ELSE = "ELSE"
 	// RETURN is a token type for return.
 	RETURN = "RETURN"
+
+	// STRING is a token type for strings.
+	STRING = "STRING"
 )
 
 // Token represents a token which has a token type and literal.

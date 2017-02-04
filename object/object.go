@@ -24,6 +24,8 @@ const (
 	ErrorType = "Error"
 	// FunctionType represents a type of functions.
 	FunctionType = "Function"
+	// StringType represents a type of strings.
+	StringType = "String"
 )
 
 // Object represents an object of Monkey language.
@@ -37,7 +39,7 @@ type Integer struct {
 	Value int64
 }
 
-// Type return the type of the Integer.
+// Type returns the type of the Integer.
 func (i *Integer) Type() Type {
 	return IntegerType
 }
@@ -133,4 +135,19 @@ func (f *Function) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+// String represents a string.
+type String struct {
+	Value string
+}
+
+// Type returns the type of the String.
+func (s *String) Type() Type {
+	return StringType
+}
+
+// Inspect returns a string representation of the String.
+func (s *String) Inspect() string {
+	return s.Value
 }

@@ -343,3 +343,23 @@ func (ce *CallExpression) String() string {
 
 	return out.String()
 }
+
+// StringLiteral represents a string literal.
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode() {}
+
+// TokenLiteral returns a token literal of string.
+func (sl *StringLiteral) TokenLiteral() string {
+	if sl == nil {
+		return ""
+	}
+	return sl.Token.Literal
+}
+
+func (sl *StringLiteral) String() string {
+	return sl.TokenLiteral()
+}
