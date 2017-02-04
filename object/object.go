@@ -26,6 +26,9 @@ const (
 	FunctionType = "Function"
 	// StringType represents a type of strings.
 	StringType = "String"
+
+	// BuiltinType represents a type of builtin functions.
+	BuiltinType = "Builtin"
 )
 
 // Object represents an object of Monkey language.
@@ -104,7 +107,7 @@ func (e *Error) Type() Type {
 
 // Inspect returns a string representation of the Error.
 func (e *Error) Inspect() string {
-	return "Error:" + e.Message
+	return "Error: " + e.Message
 }
 
 // Function represents a function.
@@ -150,4 +153,22 @@ func (s *String) Type() Type {
 // Inspect returns a string representation of the String.
 func (s *String) Inspect() string {
 	return s.Value
+}
+
+// BuiltinFunction represents a function signature of builtin functions.
+type BuiltinFunction func(args ...Object) Object
+
+// Builtin represents a builtin function.
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+// Type returns the type of the Builtin.
+func (b *Builtin) Type() Type {
+	return BuiltinType
+}
+
+// Inspect returns a string representation of the Builtin.
+func (b *Builtin) Inspect() string {
+	return "builtin function"
 }
