@@ -342,6 +342,11 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"last([1])", 1},
 		{"last([1, 2])", 2},
 		{`last(1)`, "argument to `last` must be Array, got Integer"},
+		// rest for arrays
+		{"rest([])", nil},
+		{"rest([1])", []int64{}},
+		{"rest([1, 2, 3])", []int64{2, 3}},
+		{`rest(1)`, "argument to `last` must be Array, got Integer"},
 	}
 
 	for _, tt := range tests {
@@ -358,6 +363,20 @@ func TestBuiltinFunctions(t *testing.T) {
 			}
 			if errObj.Message != expected {
 				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
+			}
+		case []int64:
+			arrObj, ok := evaluated.(*object.Array)
+			if !ok {
+				t.Errorf("object is not *object.Array. got=%#v", evaluated)
+				continue
+			}
+			if len(arrObj.Elements) != len(expected) {
+				t.Errorf("wrong number of elements. want=%d, got=%d",
+					len(arrObj.Elements), len(expected))
+				continue
+			}
+			for i, elem := range arrObj.Elements {
+				testIntegerObject(t, elem, expected[i])
 			}
 		case nil:
 			testNilObject(t, evaluated)
