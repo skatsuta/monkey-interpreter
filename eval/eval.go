@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	// NullValue represents a value of null reference.
-	NullValue = &object.Null{}
+	// NilValue represents a value of nil reference.
+	NilValue = &object.Nil{}
 	// TrueValue represents a value of true literals.
 	TrueValue = &object.Boolean{Value: true}
 	// FalseValue represents a value of false literals.
@@ -155,7 +155,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 }
 
 func evalBangOperatorExpression(right object.Object) object.Object {
-	if right == NullValue || right == FalseValue {
+	if right == NilValue || right == FalseValue {
 		return TrueValue
 	}
 	return FalseValue
@@ -257,11 +257,11 @@ func evalIfExpression(ie *ast.IfExpression, env object.Environment) object.Objec
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
 	}
-	return NullValue
+	return NilValue
 }
 
 func isTruthy(obj object.Object) bool {
-	return obj != NullValue && obj != FalseValue
+	return obj != NilValue && obj != FalseValue
 }
 
 func newError(format string, a ...interface{}) *object.Error {
@@ -343,7 +343,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	max := int64(len(arrObj.Elements) - 1)
 
 	if idx < 0 || idx > max {
-		return NullValue
+		return NilValue
 	}
 
 	return arrObj.Elements[idx]

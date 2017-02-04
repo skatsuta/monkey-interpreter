@@ -145,14 +145,14 @@ func TestIfExpression(t *testing.T) {
 		if i, ok := tt.expected.(int); ok {
 			testIntegerObject(t, evaluated, int64(i))
 		} else {
-			testNullObject(t, evaluated)
+			testNilObject(t, evaluated)
 		}
 	}
 }
 
-func testNullObject(t *testing.T, obj object.Object) {
-	if obj != NullValue {
-		t.Errorf("object is not NullValue. got=%#v", obj)
+func testNilObject(t *testing.T, obj object.Object) {
+	if obj != NilValue {
+		t.Errorf("object is not NilValue. got=%#v", obj)
 	}
 }
 
@@ -389,6 +389,6 @@ func TestArrayIndexExpressions(t *testing.T) {
 			testIntegerObject(t, evaluated, int64(i))
 			continue
 		}
-		testNullObject(t, evaluated)
+		testNilObject(t, evaluated)
 	}
 }

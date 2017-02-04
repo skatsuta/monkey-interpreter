@@ -16,8 +16,8 @@ const (
 	IntegerType Type = "Integer"
 	// BooleanType represents a type of booleans.
 	BooleanType = "Boolean"
-	// NullType represents a type of null.
-	NullType = "Null"
+	// NilType represents a type of nil.
+	NilType = "Nil"
 	// ReturnValueType represents a type of return values.
 	ReturnValueType = "ReturnValue"
 	// ErrorType represents a type of errors.
@@ -68,17 +68,17 @@ func (b *Boolean) Inspect() string {
 	return strconv.FormatBool(b.Value)
 }
 
-// Null represents the absence of any value.
-type Null struct{}
+// Nil represents the absence of any value.
+type Nil struct{}
 
-// Type returns the type of the Null.
-func (n *Null) Type() Type {
-	return NullType
+// Type returns the type of the Nil.
+func (n *Nil) Type() Type {
+	return NilType
 }
 
-// Inspect returns a string representation of the Null.
-func (n *Null) Inspect() string {
-	return "null"
+// Inspect returns a string representation of the Nil.
+func (n *Nil) Inspect() string {
+	return "nil"
 }
 
 // ReturnValue represents a return value.
