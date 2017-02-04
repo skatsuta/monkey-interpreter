@@ -332,6 +332,16 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"len([])", 0},
 		{"len([1])", 1},
 		{"len([1, 1 + 2 * 3, true])", 3},
+		// first for arrays
+		{"first([])", nil},
+		{"first([1])", 1},
+		{"first([1, 2])", 1},
+		{`first(1)`, "argument to `first` must be Array, got Integer"},
+		// last for arrays
+		{"last([])", nil},
+		{"last([1])", 1},
+		{"last([1, 2])", 2},
+		{`last(1)`, "argument to `last` must be Array, got Integer"},
 	}
 
 	for _, tt := range tests {
@@ -349,6 +359,10 @@ func TestBuiltinFunctions(t *testing.T) {
 			if errObj.Message != expected {
 				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
 			}
+		case nil:
+			testNilObject(t, evaluated)
+		default:
+			t.Errorf("unsupported evaluated value: %#v, want=%#v", evaluated, tt.expected)
 		}
 	}
 }
