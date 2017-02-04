@@ -363,3 +363,38 @@ func (sl *StringLiteral) TokenLiteral() string {
 func (sl *StringLiteral) String() string {
 	return sl.TokenLiteral()
 }
+
+// ArrayLiteral represents an array literal.
+type ArrayLiteral struct {
+	Token    token.Token // the '[' token
+	Elements []Expression
+}
+
+func (*ArrayLiteral) expressionNode() {}
+
+// TokenLiteral returns a token literal of array.
+func (al *ArrayLiteral) TokenLiteral() string {
+	if al == nil {
+		return ""
+	}
+	return al.Token.Literal
+}
+
+func (al *ArrayLiteral) String() string {
+	if al == nil {
+		return ""
+	}
+
+	elements := make([]string, 0, len(al.Elements))
+	for _, el := range al.Elements {
+		elements = append(elements, el.String())
+	}
+
+	var out bytes.Buffer
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}

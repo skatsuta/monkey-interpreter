@@ -13,6 +13,8 @@ const (
 	IDENT = "IDENT" // add, foobar, x, y, ...
 	// INT is a token type for integers.
 	INT = "INT"
+	// STRING is a token type for strings.
+	STRING = "STRING"
 
 	// BANG is a token type for NOT operator.
 	BANG = "!"
@@ -48,6 +50,10 @@ const (
 	LBRACE = "{"
 	// RBRACE is a token type for right braces.
 	RBRACE = "}"
+	// LBRACKET is a token type for left brackets.
+	LBRACKET = "["
+	// RBRACKET is a token type for right brackets.
+	RBRACKET = "]"
 
 	// FUNCTION is a token type for functions.
 	FUNCTION = "FUNCTION"
@@ -63,9 +69,6 @@ const (
 	ELSE = "ELSE"
 	// RETURN is a token type for return.
 	RETURN = "RETURN"
-
-	// STRING is a token type for strings.
-	STRING = "STRING"
 )
 
 // Token represents a token which has a token type and literal.
