@@ -398,3 +398,36 @@ func (al *ArrayLiteral) String() string {
 
 	return out.String()
 }
+
+// IndexExpression represents an expression in array index operator.
+type IndexExpression struct {
+	Token token.Token // the '[' token
+	Left  Expression
+	Index Expression
+}
+
+func (*IndexExpression) expressionNode() {}
+
+// TokenLiteral returns a token literal of array.
+func (ie *IndexExpression) TokenLiteral() string {
+	if ie == nil {
+		return ""
+	}
+	return ie.Token.Literal
+}
+
+func (ie *IndexExpression) String() string {
+	if ie == nil {
+		return ""
+	}
+
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Index.String())
+	out.WriteString("])")
+
+	return out.String()
+}
