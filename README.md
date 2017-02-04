@@ -1,5 +1,7 @@
 # Monkey interpreter
 
+[![wercker status](https://app.wercker.com/status/20b05c4eb17fc957ff322da01bb157fc/s/master "wercker status")](https://app.wercker.com/project/byKey/20b05c4eb17fc957ff322da01bb157fc)
+
 Monkey programming language interpreter designed in [_Writing An Interpreter In Go_](https://interpreterbook.com/).
 
 
