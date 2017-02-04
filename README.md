@@ -66,6 +66,18 @@ Feel free to type in commands
 Hello skatsuta!
 ```
 
+### Arrays
+
+```sh
+>> let myArray = ["Thorsten", "Ball", 28, fn(x) { x * x }];
+>> myArray[0]
+Thorsten
+>> myArray[4 - 2]
+28
+>> myArray[3](2);
+4
+```
+
 ### Builtin functions
 
 ```sh
@@ -73,4 +85,15 @@ Hello skatsuta!
 5
 >> len("∑");
 3
+>> let myArray = ["one", "two", "three"];
+>> len(myArray)
+3
+>> first(myArray)
+one
+>> rest(myArray)
+[two, three]
+>> last(myArray)
+three
+>> push(myArray, "four")
+[one, two, three, four]
 ```
