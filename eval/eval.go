@@ -20,18 +20,23 @@ var (
 func Eval(node ast.Node, env object.Environment) object.Object {
 	switch node := node.(type) {
 	// Statements
+
 	case *ast.Program:
 		return evalProgram(node, env)
+
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
+
 	case *ast.ReturnStatement:
 		value := Eval(node.ReturnValue, env)
 		if isError(value) {
 			return value
 		}
 		return &object.ReturnValue{Value: value}
+
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
+
 	case *ast.LetStatement:
 		value := Eval(node.Value, env)
 		if isError(value) {
@@ -40,16 +45,20 @@ func Eval(node ast.Node, env object.Environment) object.Object {
 		env.Set(node.Name.Value, value)
 
 	// Expressions
+
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
+
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
+
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
 		if isError(left) {
@@ -60,16 +69,20 @@ func Eval(node ast.Node, env object.Environment) object.Object {
 			return right
 		}
 		return evalInfixExpression(node.Operator, left, right)
+
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
+
 	case *ast.Ident:
 		return evalIdent(node, env)
+
 	case *ast.FunctionLiteral:
 		return &object.Function{
 			Parameters: node.Parameters,
 			Body:       node.Body,
 			Env:        env,
 		}
+
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
 		if isError(function) {
@@ -80,8 +93,16 @@ func Eval(node ast.Node, env object.Environment) object.Object {
 			return args[0]
 		}
 		return applyFunction(function, args)
+
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
+
+	case *ast.ArrayLiteral:
+		elems := evalExpressions(node.Elements, env)
+		if len(elems) == 1 && isError(elems[0]) {
+			return elems[0]
+		}
+		return &object.Array{Elements: elems}
 	}
 
 	return nil

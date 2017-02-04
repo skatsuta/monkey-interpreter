@@ -26,9 +26,10 @@ const (
 	FunctionType = "Function"
 	// StringType represents a type of strings.
 	StringType = "String"
-
 	// BuiltinType represents a type of builtin functions.
 	BuiltinType = "Builtin"
+	// ArrayType represents a type of arrays.
+	ArrayType = "Array"
 )
 
 // Object represents an object of Monkey language.
@@ -171,4 +172,32 @@ func (b *Builtin) Type() Type {
 // Inspect returns a string representation of the Builtin.
 func (b *Builtin) Inspect() string {
 	return "builtin function"
+}
+
+// Array represents an array.
+type Array struct {
+	Elements []Object
+}
+
+// Type returns the type of the Array.
+func (*Array) Type() Type {
+	return ArrayType
+}
+
+// Inspect returns a string representation of the Array.
+func (a *Array) Inspect() string {
+	if a == nil {
+		return ""
+	}
+
+	elements := make([]string, 0, len(a.Elements))
+	for _, e := range a.Elements {
+		elements = append(elements, e.Inspect())
+	}
+
+	var out bytes.Buffer
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+	return out.String()
 }
