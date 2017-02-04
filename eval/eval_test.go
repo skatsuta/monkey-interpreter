@@ -365,3 +365,30 @@ func TestArrayLiterals(t *testing.T) {
 	testIntegerObject(t, array.Elements[1], 4)
 	testIntegerObject(t, array.Elements[2], 6)
 }
+
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"[1, 2, 3][0]", 1},
+		{"[1, 2, 3][1]", 2},
+		{"[1, 2, 3][2]", 3},
+		{"let i = 0; [1][i]", 1},
+		{"[1, 2, 3][1 + 1]", 3},
+		{"let arr = [1, 2, 3]; arr[2];", 3},
+		{"let arr = [1, 2, 3]; arr[0] + arr[1] + arr[2];", 6},
+		{"let arr = [1, 2, 3]; let i = arr[0]; arr[i]", 2},
+		{"[1, 2, 3][3]", nil},
+		{"[1, 2, 3][-1]", nil},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		if i, ok := tt.expected.(int); ok {
+			testIntegerObject(t, evaluated, int64(i))
+			continue
+		}
+		testNullObject(t, evaluated)
+	}
+}
