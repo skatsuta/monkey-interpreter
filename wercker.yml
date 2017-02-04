@@ -1,0 +1,31 @@
+box: golang
+
+build:
+  steps:
+    # Sets the go workspace and places you package
+    # at the right place in the workspace tree
+    - setup-go-workspace
+
+    # Show go version
+    - script:
+        name: go version
+        code: |
+            go version
+
+    # Gets the dependencies
+    - script:
+        name: go get
+        code: |
+            go get -t -v ./...
+
+    # Build the project
+    - script:
+        name: go build
+        code: |
+            go build ./...
+
+    # Test the project
+    - script:
+        name: go test
+        code: |
+            go test ./...
