@@ -12,6 +12,8 @@ var builtins = map[string]*object.Builtin{
 			switch arg := args[0].(type) {
 			case *object.String:
 				return &object.Integer{Value: int64(len(arg.Value))}
+			case *object.Array:
+				return &object.Integer{Value: int64(len(arg.Elements))}
 			default:
 				return newError("argument to `len` not supported, got %s", arg.Type())
 			}
