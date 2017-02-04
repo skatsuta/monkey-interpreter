@@ -347,6 +347,11 @@ func TestBuiltinFunctions(t *testing.T) {
 		{"rest([1])", []int64{}},
 		{"rest([1, 2, 3])", []int64{2, 3}},
 		{`rest(1)`, "argument to `last` must be Array, got Integer"},
+		// push for arrays
+		{"push([], 1)", []int64{1}},
+		{"push([1, 2], 3)", []int64{1, 2, 3}},
+		{"push([])", "wrong number of arguments. want=2, got=1"},
+		{"push(1, 2)", "first argument to `push` must be Array, got Integer"},
 	}
 
 	for _, tt := range tests {
