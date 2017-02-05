@@ -2,6 +2,7 @@ package object
 
 import (
 	"bytes"
+	"hash/fnv"
 	"strconv"
 	"strings"
 
@@ -30,12 +31,25 @@ const (
 	BuiltinType = "Builtin"
 	// ArrayType represents a type of arrays.
 	ArrayType = "Array"
+	// HashType represents a type of hashes.
+	HashType = "Hash"
 )
 
 // Object represents an object of Monkey language.
 type Object interface {
 	Type() Type
 	Inspect() string
+}
+
+// HashKey represents a key of a hash.
+type HashKey struct {
+	Type  Type
+	Value uint64
+}
+
+// Hashable is the interface that is able to become a hash key.
+type Hashable interface {
+	HashKey() HashKey
 }
 
 // Integer represents an integer.
@@ -53,6 +67,14 @@ func (i *Integer) Inspect() string {
 	return strconv.FormatInt(i.Value, 10)
 }
 
+// HashKey returns a hash key object for i.
+func (i *Integer) HashKey() HashKey {
+	return HashKey{
+		Type:  i.Type(),
+		Value: uint64(i.Value),
+	}
+}
+
 // Boolean represents a boolean.
 type Boolean struct {
 	Value bool
@@ -66,6 +88,15 @@ func (b *Boolean) Type() Type {
 // Inspect returns a string representation of the Boolean.
 func (b *Boolean) Inspect() string {
 	return strconv.FormatBool(b.Value)
+}
+
+// HashKey returns a hash key object for b.
+func (b *Boolean) HashKey() HashKey {
+	key := HashKey{Type: b.Type()}
+	if b.Value {
+		key.Value = 1
+	}
+	return key
 }
 
 // Nil represents the absence of any value.
@@ -156,6 +187,17 @@ func (s *String) Inspect() string {
 	return s.Value
 }
 
+// HashKey returns a hash key object for s.
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+
+	return HashKey{
+		Type:  s.Type(),
+		Value: h.Sum64(),
+	}
+}
+
 // BuiltinFunction represents a function signature of builtin functions.
 type BuiltinFunction func(args ...Object) Object
 
@@ -199,5 +241,39 @@ func (a *Array) Inspect() string {
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
 	out.WriteString("]")
+	return out.String()
+}
+
+// HashPair represents a key-value pair in a hash.
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+// Hash represents a hash.
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+// Type returns the type of the Hash.
+func (*Hash) Type() Type {
+	return HashType
+}
+
+// Inspect returns a string representation of the Hash.
+func (h *Hash) Inspect() string {
+	if h == nil {
+		return ""
+	}
+
+	pairs := make([]string, 0, len(h.Pairs))
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, pair.Key.Inspect()+": "+pair.Value.Inspect())
+	}
+
+	var out bytes.Buffer
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
 	return out.String()
 }

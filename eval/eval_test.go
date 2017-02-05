@@ -435,3 +435,45 @@ func TestArrayIndexExpressions(t *testing.T) {
 		testNilObject(t, evaluated)
 	}
 }
+
+func TestHashLiterals(t *testing.T) {
+	input := `
+	let two = "two";
+	{
+		"one": 10 - 9,
+		two: 1 + 1,
+		"thr" + "ee": 6 / 2,
+		4: 4,
+		true: 5,
+		false: 6
+	};
+	`
+
+	evaluated := testEval(t, input)
+	hash, ok := evaluated.(*object.Hash)
+	if !ok {
+		t.Fatalf("object is not *object.Hash. got=%#v", evaluated)
+	}
+
+	expected := map[object.HashKey]int64{
+		(&object.String{Value: "one"}).HashKey():   1,
+		(&object.String{Value: "two"}).HashKey():   2,
+		(&object.String{Value: "three"}).HashKey(): 3,
+		(&object.Integer{Value: 4}).HashKey():      4,
+		TrueValue.HashKey():                        5,
+		FalseValue.HashKey():                       6,
+	}
+
+	if l := len(hash.Pairs); l != len(expected) {
+		t.Fatalf("hash has wrong number of pairs. want=%d, got=%d", len(expected), l)
+	}
+
+	for key, value := range expected {
+		pair, ok := hash.Pairs[key]
+		if !ok {
+			t.Errorf("no pair for given key in Pairs: %#v", key)
+			continue
+		}
+		testIntegerObject(t, pair.Value, value)
+	}
+}
