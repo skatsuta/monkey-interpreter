@@ -78,6 +78,20 @@ Thorsten
 4
 ```
 
+### Hashes
+
+```sh
+>> let myHash = {"name": "Jimmy", "age": 72, true: "yes, a boolean", 99: "correct, an integer"};
+>> myHash["name"]
+Jimmy
+>> myHash["age"]
+72
+>> myHash[true]
+yes, a boolean
+>> myHash[99]
+correct, an integer
+```
+
 ### Builtin functions
 
 ```sh
@@ -96,4 +110,7 @@ one
 three
 >> push(myArray, "four")
 [one, two, three, four]
+>> puts("Hello World")
+Hello World
+nil
 ```
