@@ -78,6 +78,7 @@ func New(l lexer.Lexer) *Parser {
 		token.FUNCTION: p.parseFunctionLiteral,
 		token.STRING:   p.parseStringLiteral,
 		token.LBRACKET: p.parseArrayLiteral,
+		token.LBRACE:   p.parseHashLiteral,
 	}
 
 	p.infixParseFns = map[token.Type]infixParseFn{
@@ -113,6 +114,24 @@ func (p *Parser) Errors() []string {
 func (p *Parser) peekError(typ token.Type) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", typ, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) curTokenIs(typ token.Type) bool {
+	return p.curToken.Type == typ
+}
+
+func (p *Parser) peekTokenIs(typ token.Type) bool {
+	return p.peekToken.Type == typ
+}
+
+func (p *Parser) expectPeek(typ token.Type) bool {
+	if p.peekTokenIs(typ) {
+		p.nextToken()
+		return true
+	}
+
+	p.peekError(typ)
+	return false
 }
 
 // ParseProgram parses a program and returns a new Program AST node.
@@ -184,24 +203,6 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	}
 
 	return stmt
-}
-
-func (p *Parser) curTokenIs(typ token.Type) bool {
-	return p.curToken.Type == typ
-}
-
-func (p *Parser) peekTokenIs(typ token.Type) bool {
-	return p.peekToken.Type == typ
-}
-
-func (p *Parser) expectPeek(typ token.Type) bool {
-	if p.peekTokenIs(typ) {
-		p.nextToken()
-		return true
-	}
-
-	p.peekError(typ)
-	return false
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
@@ -486,4 +487,34 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	}
 
 	return expr
+}
+
+func (p *Parser) parseHashLiteral() ast.Expression {
+	hash := &ast.HashLiteral{
+		Token: p.curToken,
+		Pairs: make(map[ast.Expression]ast.Expression),
+	}
+
+	for !p.peekTokenIs(token.RBRACE) {
+		p.nextToken()
+		key := p.parseExpression(LOWEST)
+
+		if !p.expectPeek(token.COLON) {
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(LOWEST)
+		hash.Pairs[key] = value
+
+		if !p.peekTokenIs(token.RBRACE) && !p.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+
+	if !p.expectPeek(token.RBRACE) {
+		return nil
+	}
+
+	return hash
 }

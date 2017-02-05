@@ -431,3 +431,36 @@ func (ie *IndexExpression) String() string {
 
 	return out.String()
 }
+
+// HashLiteral represents a hash literal.
+type HashLiteral struct {
+	Token token.Token // the '{' token
+	Pairs map[Expression]Expression
+}
+
+func (*HashLiteral) expressionNode() {}
+
+// TokenLiteral returns a token literal of hash.
+func (hl *HashLiteral) TokenLiteral() string {
+	if hl == nil {
+		return ""
+	}
+	return hl.Token.Literal
+}
+
+func (hl *HashLiteral) String() string {
+	if hl == nil {
+		return ""
+	}
+
+	pairs := make([]string, len(hl.Pairs))
+	for key, value := range hl.Pairs {
+		pairs = append(pairs, key.String()+": "+value.String())
+	}
+
+	var out bytes.Buffer
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}

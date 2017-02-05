@@ -41,6 +41,8 @@ const (
 	COMMA = ","
 	// SEMICOLON is a token type for semicolons.
 	SEMICOLON = ";"
+	// COLON is a token type for colons.
+	COLON = ":"
 
 	// LPAREN is a token type for left parentheses.
 	LPAREN = "("

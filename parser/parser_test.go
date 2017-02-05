@@ -692,3 +692,113 @@ func TestParsingIndexExpressions(t *testing.T) {
 	testIdent(t, idxExpr.Left, "myArray")
 	testInfixExpression(t, idxExpr.Index, 1, "+", 1)
 }
+
+func TestParsingHashLiterals(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			input:    "{}",
+			expected: map[string]int64{},
+		},
+		{
+			input: `{"one": 1, "two": 2, "three": 3}`,
+			expected: map[string]int64{
+				"one":   1,
+				"two":   2,
+				"three": 3,
+			},
+		},
+		{
+			input: "{1: 1, 2: 2, 3: 3}",
+			expected: map[int64]int64{
+				1: 1,
+				2: 2,
+				3: 3,
+			},
+		},
+		{
+			input: "{true: 1, false: 2}",
+			expected: map[bool]int64{
+				true:  1,
+				false: 2,
+			},
+		},
+		{
+			input: `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`,
+			expected: map[string]func(ast.Expression){
+				"one": func(e ast.Expression) {
+					testInfixExpression(t, e, 0, "+", 1)
+				},
+				"two": func(e ast.Expression) {
+					testInfixExpression(t, e, 10, "-", 8)
+				},
+				"three": func(e ast.Expression) {
+					testInfixExpression(t, e, 15, "/", 5)
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if l := len(program.Statements); l != 1 {
+			t.Fatalf("program has not 1 statement. got=%d", l)
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+		}
+
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		if !ok {
+			t.Fatalf("hash not *ast.HashLiteral. got=%T", stmt.Expression)
+		}
+
+		for key, value := range hash.Pairs {
+			switch key := key.(type) {
+			case *ast.StringLiteral:
+				switch expected := tt.expected.(type) {
+				case map[string]int64:
+					if l := len(hash.Pairs); l != len(expected) {
+						t.Errorf("hash.Pairs has wrong length. want=%d, got=%d", len(expected), l)
+						continue
+					}
+					expectedValue := expected[key.Value]
+					testIntegerLiteral(t, value, expectedValue)
+				case map[string]func(ast.Expression):
+					if l := len(hash.Pairs); l != len(expected) {
+						t.Errorf("hash.Pairs has wrong length. want=%d, got=%d", len(expected), l)
+						continue
+					}
+					testFunc := expected[key.Value]
+					testFunc(value)
+				}
+			case *ast.IntegerLiteral:
+				expected := tt.expected.(map[int64]int64)
+				if l := len(hash.Pairs); l != len(expected) {
+					t.Errorf("hash.Pairs has wrong length. want=%d, got=%d", len(expected), l)
+					continue
+				}
+				expectedValue := expected[key.Value]
+				testIntegerLiteral(t, value, expectedValue)
+			case *ast.Boolean:
+				expected := tt.expected.(map[bool]int64)
+				if l := len(hash.Pairs); l != len(expected) {
+					t.Errorf("hash.Pairs has wrong length. want=%d, got=%d", len(expected), l)
+					continue
+				}
+				expectedValue := expected[key.Value]
+				testIntegerLiteral(t, value, expectedValue)
+			default:
+				t.Errorf("unsupported key type: %T", key)
+			}
+		}
+	}
+}
