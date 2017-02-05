@@ -2,7 +2,6 @@ package object
 
 import (
 	"bytes"
-	"fmt"
 	"hash/fnv"
 	"strconv"
 	"strings"
@@ -185,7 +184,7 @@ func (s *String) Type() Type {
 
 // Inspect returns a string representation of the String.
 func (s *String) Inspect() string {
-	return fmt.Sprintf("%q", s.Value)
+	return s.Value
 }
 
 // HashKey returns a hash key object for s.
