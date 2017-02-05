@@ -204,6 +204,8 @@ func TestErrorHandling(t *testing.T) {
 		`, "unknown operator: Boolean + Boolean"},
 		{"foobar", "identifier not found: foobar"},
 		{`"Hello" - "World"`, "unknown operator: String - String"},
+		{`{[1, 2]: "Monkey"}`, "unusable as hash key: Array"},
+		{`{"name": "Monkey"}[fn(x) { x }]`, "unusable as hash key: Function"},
 	}
 
 	for _, tt := range tests {
@@ -475,5 +477,29 @@ func TestHashLiterals(t *testing.T) {
 			continue
 		}
 		testIntegerObject(t, pair.Value, value)
+	}
+}
+
+func TestHashIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`{"foo": 2 + 3}["foo"]`, 5},
+		{`{"foo": 5}["bar"]`, nil},
+		{`let key = "foo"; {"foo": 5}[key]`, 5},
+		{`{}["foo"]`, nil},
+		{`{5: 5}[5]`, 5},
+		{`{true: 5}[true]`, 5},
+		{`{false: 5}[false]`, 5},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		if i, ok := tt.expected.(int); ok {
+			testIntegerObject(t, evaluated, int64(i))
+			continue
+		}
+		testNilObject(t, evaluated)
 	}
 }
