@@ -7,16 +7,26 @@ Monkey programming language interpreter designed in [_Writing An Interpreter In 
 
 ## Usage
 
+To install the Monkey interpreter, use `go get`:
+
 ```sh
 $ go get -v -u github.com/skatsuta/monkey-interpreter/...
-...
+```
 
+To run REPL:
+
+```sh
 $ $GOPATH/bin/monkey-interpreter
 This is the Monkey programming language!
 Feel free to type in commands
 >> 
 ```
 
+To run a script file (for example `script.monkey` file):
+
+```sh
+$ $GOPATH/bin/monkey-interpreter script.monkey
+```
 
 ## Getting started with Monkey
 
