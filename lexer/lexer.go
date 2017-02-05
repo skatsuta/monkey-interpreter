@@ -38,6 +38,11 @@ func (l *lexer) readChar() {
 func (l *lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
+	// skip comments
+	if l.ch == '/' && l.peekChar() == '/' {
+		l.skipComment()
+	}
+
 	var tok token.Token
 	switch l.ch {
 	case '=':
@@ -119,6 +124,13 @@ func (l *lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
+}
+
+func (l *lexer) skipComment() {
+	for l.ch != '\n' && l.ch != '\r' {
+		l.readChar()
+	}
+	l.skipWhitespace()
 }
 
 func (l *lexer) readIdent() string {
