@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,30 +24,30 @@ func main() {
 	}
 
 	// Run a Monkey script
-	runProgram(os.Args[1])
+	if err := runProgram(os.Args[1]); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
-func runProgram(filename string) {
+func runProgram(filename string) error {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "could not read %s: %v\n", os.Args[1], err)
-		os.Exit(1)
+		return fmt.Errorf("could not read %s: %v", filename, err)
 	}
 
 	p := parser.New(lexer.New(string(data)))
 	program := p.ParseProgram()
 	if len(p.Errors()) > 0 {
-		for _, e := range p.Errors() {
-			fmt.Fprintln(os.Stderr, e)
-		}
-		os.Exit(1)
+		return errors.New(p.Errors()[0])
 	}
 
 	env := object.NewEnvironment()
-	evaluated := eval.Eval(program, env)
-	if evaluated == nil {
-		return
+	result := eval.Eval(program, env)
+	if _, ok := result.(*object.Nil); ok {
+		return nil
 	}
 
-	io.WriteString(os.Stdout, evaluated.Inspect()+"\n")
+	_, err = io.WriteString(os.Stdout, result.Inspect()+"\n")
+	return err
 }
