@@ -7,13 +7,13 @@ Monkey programming language interpreter designed in [_Writing An Interpreter In 
 
 ## Usage
 
-To install the Monkey interpreter, use `go get`:
+Install the Monkey interpreter using `go get`:
 
 ```sh
 $ go get -v -u github.com/skatsuta/monkey-interpreter/...
 ```
 
-To run REPL:
+Then run REPL:
 
 ```sh
 $ $GOPATH/bin/monkey-interpreter
@@ -22,7 +22,7 @@ Feel free to type in commands
 >> 
 ```
 
-To run a script file (for example `script.monkey` file):
+Or run a Monkey script file (for example `script.monkey` file):
 
 ```sh
 $ $GOPATH/bin/monkey-interpreter script.monkey
