@@ -60,6 +60,38 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
+func testFloatObject(t *testing.T, obj object.Object, expected float64) {
+	f, ok := obj.(*object.Float)
+	if !ok {
+		t.Errorf("object is not *object.Float. got=%#v", obj)
+		return
+	}
+
+	if f.Value != expected {
+		t.Errorf("object has wrong value. want=%f, got=%f", expected, f.Value)
+	}
+}
+
+func TestEvalFloatExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"12.34", 12.34},
+		{"0.56", 0.56},
+		{"78.00", 78.00},
+		{"-12.34", -12.34},
+		{"-0.56", -0.56},
+		{"-78.00", -78.00},
+		{"(5 + 10.0 * 2.5 + 15.0 / 3) * 2.1 + -10.1", 63.4},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		testFloatObject(t, evaluated, tt.expected)
+	}
+}
+
 func testBooleanObject(t *testing.T, obj object.Object, expected bool) {
 	result, ok := obj.(*object.Boolean)
 	if !ok {
@@ -204,6 +236,7 @@ func TestErrorHandling(t *testing.T) {
 		`, "unknown operator: Boolean + Boolean"},
 		{"foobar", "identifier not found: foobar"},
 		{`"Hello" - "World"`, "unknown operator: String - String"},
+		{`1.5 + "World"`, "unknown operator: Float + String"},
 		{`{[1, 2]: "Monkey"}`, "unusable as hash key: Array"},
 		{`{"name": "Monkey"}[fn(x) { x }]`, "unusable as hash key: Function"},
 	}

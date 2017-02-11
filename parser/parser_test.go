@@ -173,6 +173,49 @@ func TestIntegerExpression(t *testing.T) {
 	testIntegerLiteral(t, stmt.Expression, 5)
 }
 
+func testFloatLiteral(t *testing.T, expr ast.Expression, value float64) {
+	fl, ok := expr.(*ast.FloatLiteral)
+	if !ok {
+		t.Errorf("expr not *ast.FloatLiteral. got=%T", fl)
+		return
+	}
+
+	if fl.Value != value {
+		t.Errorf("fl.Value not %f. got=%f", value, fl.Value)
+	}
+}
+
+func TestFloatExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"12.34", 12.34},
+		{"0.56", 0.56},
+		{"78.00", 78.00},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if l := len(program.Statements); l != 1 {
+			t.Errorf("program has not enough statements. got=%d", l)
+			continue
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Errorf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
+				program.Statements[0])
+			continue
+		}
+
+		testFloatLiteral(t, stmt.Expression, tt.expected)
+	}
+}
+
 func TestParsingPrefixExpressions(t *testing.T) {
 	tests := []struct {
 		input        string
@@ -248,6 +291,8 @@ func testLiteralExpression(t *testing.T, expr ast.Expression, expected interface
 		testIntegerLiteral(t, expr, int64(v))
 	case int64:
 		testIntegerLiteral(t, expr, v)
+	case float64:
+		testFloatLiteral(t, expr, v)
 	case string:
 		testIdent(t, expr, v)
 	case bool:
@@ -262,6 +307,7 @@ func testInfixExpression(t *testing.T, expr ast.Expression, left interface{}, op
 	op, ok := expr.(*ast.InfixExpression)
 	if !ok {
 		t.Errorf("expr is not ast.OperatorExpression. got=%T(%s)", expr, expr)
+		return
 	}
 
 	testLiteralExpression(t, op.Left, left)
@@ -291,6 +337,14 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"true == true", true, "==", true},
 		{"true != false", true, "!=", false},
 		{"false == false", false, "==", false},
+		{"5 + 5.1;", 5, "+", 5.1},
+		{"5.0 - 5.2;", 5.0, "-", 5.2},
+		{"5.3 * 5.4;", 5.3, "*", 5.4},
+		{"5.5 / 5.6;", 5.5, "/", 5.6},
+		{"5.7 > 5.8;", 5.7, ">", 5.8},
+		{"5.9 < 5;", 5.9, "<", 5},
+		{"5 == 5.0;", 5, "==", 5.0},
+		{"5.1 != 5.1;", 5.1, "!=", 5.1},
 	}
 
 	for _, tt := range tests {
@@ -300,18 +354,21 @@ func TestParsingInfixExpressions(t *testing.T) {
 
 		l := len(program.Statements)
 		if l != 1 {
-			t.Fatalf("program.Statements does not contain %d statements. got=%d", 1, l)
+			t.Errorf("program.Statements does not contain %d statements. got=%d", 1, l)
+			continue
 		}
 
 		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 		if !ok {
-			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
+			t.Errorf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
 				program.Statements[0])
+			continue
 		}
 
 		expr, ok := stmt.Expression.(*ast.InfixExpression)
 		if !ok {
-			t.Fatalf("expr not *ast.InfixExpression. got=%T", stmt.Expression)
+			t.Errorf("expr not *ast.InfixExpression. got=%T", stmt.Expression)
+			continue
 		}
 
 		testLiteralExpression(t, expr.Left, tt.leftValue)

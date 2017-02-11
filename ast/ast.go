@@ -160,6 +160,23 @@ func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
 
+// FloatLiteral represents a floating point number literal.
+type FloatLiteral struct {
+	Token token.Token
+	Value float64
+}
+
+func (fl *FloatLiteral) expressionNode() {}
+
+// TokenLiteral returns a token literal of floating point number.
+func (fl *FloatLiteral) TokenLiteral() string {
+	return fl.Token.Literal
+}
+
+func (fl *FloatLiteral) String() string {
+	return fl.Token.Literal
+}
+
 // PrefixExpression represents a prefix expression.
 type PrefixExpression struct {
 	Token    token.Token // The prefix token, e.g. !

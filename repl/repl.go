@@ -19,7 +19,7 @@ func Start(in io.Reader, out io.Writer) {
 	env := object.NewEnvironment()
 
 	for {
-		fmt.Printf(prompt)
+		fmt.Print(prompt)
 		if !scanner.Scan() {
 			return
 		}
@@ -46,6 +46,7 @@ func Start(in io.Reader, out io.Writer) {
 
 func printParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
-		io.WriteString(out, msg+"\n")
+		io.WriteString(out, msg)
+		io.WriteString(out, "\n")
 	}
 }

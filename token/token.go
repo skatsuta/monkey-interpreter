@@ -13,6 +13,8 @@ const (
 	IDENT = "IDENT" // add, foobar, x, y, ...
 	// INT is a token type for integers.
 	INT = "INT"
+	// FLOAT is a token type for floating point numbers.
+	FLOAT = "FLOAT"
 	// STRING is a token type for strings.
 	STRING = "STRING"
 

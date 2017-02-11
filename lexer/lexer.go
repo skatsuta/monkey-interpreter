@@ -104,15 +104,16 @@ func (l *lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
+		if isDigit(l.ch) {
+			return l.readNumberToken()
+		}
+
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdent()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
-		} else if isDigit(l.ch) {
-			tok.Type = token.INT
-			tok.Literal = l.readNumber()
-			return tok
 		}
+
 		tok = newToken(token.ILLEGAL, l.ch)
 	}
 
@@ -133,22 +134,6 @@ func (l *lexer) skipComment() {
 	l.skipWhitespace()
 }
 
-func (l *lexer) readIdent() string {
-	return l.read(isLetter)
-}
-
-func (l *lexer) readNumber() string {
-	return l.read(isDigit)
-}
-
-func (l *lexer) read(checkFn func(byte) bool) string {
-	position := l.position
-	for checkFn(l.ch) {
-		l.readChar()
-	}
-	return l.input[position:l.position]
-}
-
 func (l *lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -165,6 +150,39 @@ func (l *lexer) readString() string {
 		}
 	}
 	return l.input[position:l.position]
+}
+
+func (l *lexer) read(checkFn func(byte) bool) string {
+	position := l.position
+	for checkFn(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+func (l *lexer) readIdent() string {
+	return l.read(isLetter)
+}
+
+func (l *lexer) readNumber() string {
+	return l.read(isDigit)
+}
+
+func (l *lexer) readNumberToken() token.Token {
+	intPart := l.readNumber()
+	if l.ch != '.' {
+		return token.Token{
+			Type:    token.INT,
+			Literal: intPart,
+		}
+	}
+
+	l.readChar()
+	fracPart := l.readNumber()
+	return token.Token{
+		Type:    token.FLOAT,
+		Literal: intPart + "." + fracPart,
+	}
 }
 
 func isLetter(ch byte) bool {

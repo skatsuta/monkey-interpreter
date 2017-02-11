@@ -15,6 +15,8 @@ type Type string
 const (
 	// IntegerType represents a type of integers.
 	IntegerType Type = "Integer"
+	// FloatType represents a type of floating point numbers.
+	FloatType = "Float"
 	// BooleanType represents a type of booleans.
 	BooleanType = "Boolean"
 	// NilType represents a type of nil.
@@ -72,6 +74,33 @@ func (i *Integer) HashKey() HashKey {
 	return HashKey{
 		Type:  i.Type(),
 		Value: uint64(i.Value),
+	}
+}
+
+// Float represents an integer.
+type Float struct {
+	Value float64
+}
+
+// Type returns the type of f.
+func (f *Float) Type() Type {
+	return FloatType
+}
+
+// Inspect returns a string representation of f.
+func (f *Float) Inspect() string {
+	return strconv.FormatFloat(f.Value, 'f', -1, 64)
+}
+
+// HashKey returns a hash key object for f.
+func (f *Float) HashKey() HashKey {
+	s := strconv.FormatFloat(f.Value, 'f', -1, 64)
+	h := fnv.New64a()
+	h.Write([]byte(s))
+
+	return HashKey{
+		Type:  f.Type(),
+		Value: h.Sum64(),
 	}
 }
 

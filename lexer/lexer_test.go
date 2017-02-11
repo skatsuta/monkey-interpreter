@@ -35,6 +35,10 @@ func TestNextToken(t *testing.T) {
 
 	// comment
 	let a = 1; // inline comment
+
+	let b = 123.45;
+	let c = 0.678;
+	let d = 9.0;
 	`
 
 	tests := []struct {
@@ -134,6 +138,21 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "a"},
 		{token.ASSIGN, "="},
 		{token.INT, "1"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "b"},
+		{token.ASSIGN, "="},
+		{token.FLOAT, "123.45"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "c"},
+		{token.ASSIGN, "="},
+		{token.FLOAT, "0.678"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "d"},
+		{token.ASSIGN, "="},
+		{token.FLOAT, "9.0"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
