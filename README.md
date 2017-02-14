@@ -37,6 +37,9 @@ $ $GOPATH/bin/monkey-interpreter script.monkey
 >> let b = a * 2;
 >> (a + b) / 2 - 3;
 12
+>> let c = 2.5;
+>> b + c
+22.5
 ```
 
 ### If expressions
