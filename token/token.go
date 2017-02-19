@@ -24,7 +24,7 @@ const (
 	ASSIGN = "="
 	// PLUS is a token type for addition.
 	PLUS = "+"
-	// MINUS is a token type for substraction.
+	// MINUS is a token type for subtraction.
 	MINUS = "-"
 	// ASTARISK is a token type for multiplication.
 	ASTARISK = "*"
