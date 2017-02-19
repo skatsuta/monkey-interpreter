@@ -6,13 +6,16 @@ build:
     # at the right place in the workspace tree
     - setup-go-workspace
 
+    # Run golint
+    - golint
+
     # Show go version
     - script:
         name: go version
         code: |
             go version
 
-    # Gets the dependencies
+    # Get the dependencies
     - script:
         name: go get
         code: |
