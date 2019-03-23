@@ -538,3 +538,31 @@ func TestHashIndexExpressions(t *testing.T) {
 		testNilObject(t, evaluated)
 	}
 }
+
+func TestQuote(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{`quote(5)`, `5`},
+		{`quote(foobar)`, `foobar`},
+		{`quote(foobar + barfoo)`, `(foobar + barfoo)`},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(t, tt.input)
+		q, ok := evaluated.(*object.Quote)
+		if !ok {
+			t.Fatalf("expected *object.Quote, but got %T (%#v)", evaluated, evaluated)
+		}
+
+		if q.Node == nil {
+			t.Fatalf("quote.node is nil")
+		}
+
+		got := q.Node.String()
+		if got != tt.want {
+			t.Errorf("expected %q, but got %q", tt.want, got)
+		}
+	}
+}

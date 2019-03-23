@@ -2,6 +2,7 @@ package object
 
 import (
 	"bytes"
+	"fmt"
 	"hash/fnv"
 	"strconv"
 	"strings"
@@ -35,6 +36,8 @@ const (
 	ArrayType = "Array"
 	// HashType represents a type of hashes.
 	HashType = "Hash"
+	// QuoteType represents a type of quotes used for macros.
+	QuoteType = "Quote"
 )
 
 // Object represents an object of Monkey language.
@@ -305,4 +308,19 @@ func (h *Hash) Inspect() string {
 	out.WriteString(strings.Join(pairs, ", "))
 	out.WriteString("}")
 	return out.String()
+}
+
+// Quote represents a quote, i.e. an unevaluated expression.
+type Quote struct {
+	ast.Node
+}
+
+// Type returns the type of `q`.
+func (q *Quote) Type() Type {
+	return QuoteType
+}
+
+// Inspect returns a string representation of `q`.
+func (q *Quote) Inspect() string {
+	return fmt.Sprintf("%s(%s)", QuoteType, q.Node.String())
 }
