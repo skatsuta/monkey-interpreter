@@ -80,6 +80,7 @@ func New(l lexer.Lexer) *Parser {
 		token.STRING:   p.parseStringLiteral,
 		token.LBRACKET: p.parseArrayLiteral,
 		token.LBRACE:   p.parseHashLiteral,
+		token.MACRO:    p.parseMacroLiteral,
 	}
 
 	p.infixParseFns = map[token.Type]infixParseFn{
@@ -532,4 +533,26 @@ func (p *Parser) parseHashLiteral() ast.Expression {
 	}
 
 	return hash
+}
+
+func (p *Parser) parseMacroLiteral() ast.Expression {
+	tok := p.curToken
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	params := p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	body := p.parseBlockStatement()
+
+	return &ast.MacroLiteral{
+		Token:      tok,
+		Parameters: params,
+		Body:       body,
+	}
 }
