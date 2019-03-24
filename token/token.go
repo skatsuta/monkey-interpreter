@@ -73,6 +73,8 @@ const (
 	ELSE = "ELSE"
 	// RETURN is a token type for return.
 	RETURN = "RETURN"
+	// MACRO is a token type for macros.
+	MACRO = "MACRO"
 )
 
 // Token represents a token which has a token type and literal.
@@ -90,6 +92,7 @@ var keywords = map[string]Type{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"macro":  MACRO,
 }
 
 // LookupIdent checks the language keywords to see whether the given identifier is a keyword.

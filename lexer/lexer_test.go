@@ -39,6 +39,8 @@ func TestNextToken(t *testing.T) {
 	let b = 123.45;
 	let c = 0.678;
 	let d = 9.0;
+
+	macro(x, y) { x + y; };
 	`
 
 	tests := []struct {
@@ -153,6 +155,19 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "d"},
 		{token.ASSIGN, "="},
 		{token.FLOAT, "9.0"},
+		{token.SEMICOLON, ";"},
+		{token.MACRO, "macro"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
