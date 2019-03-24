@@ -1,0 +1,69 @@
+package eval
+
+import (
+	"testing"
+
+	"github.com/skatsuta/monkey-interpreter/ast"
+	"github.com/skatsuta/monkey-interpreter/lexer"
+	"github.com/skatsuta/monkey-interpreter/object"
+	"github.com/skatsuta/monkey-interpreter/parser"
+)
+
+func TestDefineMacros(t *testing.T) {
+	input := `
+  let num = 1;
+	let func = fn(x, y) { x + y };
+	let mymacro = macro(x, y) { x + y; };
+	`
+
+	env := object.NewEnvironment()
+	program := testParseProgram(input)
+
+	DefineMacros(program, env)
+
+	stmts := program.Statements
+	if len(stmts) != 2 {
+		t.Fatalf("Wrong number of statements. got=%d", len(stmts))
+	}
+
+	if _, ok := env.Get("num"); ok {
+		t.Fatalf("`num` variable should not be defined")
+	}
+
+	if _, ok := env.Get("func"); ok {
+		t.Fatalf("`func` variable should not be defined")
+	}
+
+	obj, ok := env.Get("mymacro")
+	if !ok {
+		t.Fatalf("mymacro not in the environment")
+	}
+
+	macro, ok := obj.(*object.Macro)
+	if !ok {
+		t.Fatalf("object is not Macro; got %T (%#v)", obj, obj)
+	}
+
+	params := macro.Parameters
+	if len(params) != 2 {
+		t.Fatalf("Wrong number of macro parameters; got %d", len(params))
+	}
+
+	if params[0].String() != "x" {
+		t.Fatalf("parameter is not 'x'; got %q", params[0])
+	}
+	if params[1].String() != "y" {
+		t.Fatalf("parameter is not 'y'; got %q", params[1])
+	}
+
+	want := "(x + y)"
+
+	got := macro.Body.String()
+	if got != want {
+		t.Errorf("expected body %q but got %q", want, got)
+	}
+}
+
+func testParseProgram(input string) *ast.Program {
+	return parser.New(lexer.New(input)).ParseProgram()
+}
