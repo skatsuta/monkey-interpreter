@@ -44,3 +44,61 @@ func addMacro(stmt ast.Statement, env object.Environment) {
 	}
 	env.Set(letStmt.Name.Value, macro)
 }
+
+// ExpandMacros expands defined macros and replaces AST nodes with the result of macro expansion.
+func ExpandMacros(program ast.Node, env object.Environment) ast.Node {
+	modifier := func(node ast.Node) ast.Node {
+		call, ok := node.(*ast.CallExpression)
+		if !ok {
+			return node
+		}
+
+		macro, ok := isMacroCall(call, env)
+		if !ok {
+			return node
+		}
+
+		args := quoteArgs(call)
+		evalEnv := extendMacroEnv(macro, args)
+
+		quote, ok := Eval(macro.Body, evalEnv).(*object.Quote)
+		if !ok {
+			panic("we only support returning AST-nodes from macros")
+		}
+
+		return quote.Node
+	}
+
+	return ast.Modify(program, modifier)
+}
+
+func isMacroCall(call *ast.CallExpression, env object.Environment) (macro *object.Macro, ok bool) {
+	ident, ok := call.Function.(*ast.Ident)
+	if !ok {
+		return nil, false
+	}
+
+	obj, ok := env.Get(ident.Value)
+	if !ok {
+		return nil, false
+	}
+
+	macro, ok = obj.(*object.Macro)
+	return macro, ok
+}
+
+func quoteArgs(call *ast.CallExpression) []*object.Quote {
+	args := make([]*object.Quote, 0, len(call.Arguments))
+	for _, arg := range call.Arguments {
+		args = append(args, &object.Quote{Node: arg})
+	}
+	return args
+}
+
+func extendMacroEnv(macro *object.Macro, args []*object.Quote) object.Environment {
+	extended := object.NewEnclosedEnvironment(macro.Env)
+	for i, param := range macro.Parameters {
+		extended.Set(param.Value, args[i])
+	}
+	return extended
+}

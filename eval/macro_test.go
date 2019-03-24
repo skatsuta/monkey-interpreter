@@ -64,6 +64,40 @@ func TestDefineMacros(t *testing.T) {
 	}
 }
 
+func TestExpandMacros(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{
+			input: `
+			let infixExpr = macro() { quote(1 + 2); };
+			infixExpr();
+			`,
+			want: `(1 + 2)`,
+		},
+		{
+			input: `
+			let reverse = macro(a, b) { quote(unquote(b) - unquote(a)); };
+			reverse(2 + 2, 10 - 5);
+			`,
+			want: `(10 - 5) - (2 + 2)`,
+		},
+	}
+
+	for _, tt := range tests {
+		program := testParseProgram(tt.input)
+		env := object.NewEnvironment()
+		DefineMacros(program, env)
+		got := ExpandMacros(program, env).String()
+
+		want := testParseProgram(tt.want).String()
+		if got != want {
+			t.Errorf("expected %q, but got %q", want, got)
+		}
+	}
+}
+
 func testParseProgram(input string) *ast.Program {
 	return parser.New(lexer.New(input)).ParseProgram()
 }
