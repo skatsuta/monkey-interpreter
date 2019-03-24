@@ -38,6 +38,8 @@ const (
 	HashType = "Hash"
 	// QuoteType represents a type of quotes used for macros.
 	QuoteType = "Quote"
+	// MacroType represents a type of macros.
+	MacroType = "Macro"
 )
 
 // Object represents an object of Monkey language.
@@ -323,4 +325,34 @@ func (q *Quote) Type() Type {
 // Inspect returns a string representation of `q`.
 func (q *Quote) Inspect() string {
 	return fmt.Sprintf("%s(%s)", QuoteType, q.Node.String())
+}
+
+// Macro represents a macro.
+type Macro struct {
+	Parameters []*ast.Ident
+	Body       *ast.BlockStatement
+	Env        Environment
+}
+
+// Type returns the type of `m`.
+func (m *Macro) Type() Type {
+	return MacroType
+}
+
+// Inspect returns a string representation of `m`.
+func (m *Macro) Inspect() string {
+	var out bytes.Buffer
+
+	params := make([]string, 0, len(m.Parameters))
+	for _, p := range m.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("macro(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(m.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
 }
