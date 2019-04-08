@@ -33,9 +33,22 @@ $ $GOPATH/bin/monkey-interpreter script.monkey
 
 ## Getting started with Monkey
 
-### Variable bindings and arithmetic expressions
+### Variable bindings and number types
 
-You can define variables using `let` keyword. Supported number types are integers and floating-point numbers. You can do usual arithmetic operations against numbers, such as `+`, `-`, `*` and `/`.
+You can define variables using `let` keyword. Supported number types are integers and floating-point numbers.
+
+```sh
+>> let a = 1;
+>> a
+1
+>> let b = 0.5;
+>> b
+0.5
+```
+
+### Arithmetic expressions
+
+You can do usual arithmetic operations against numbers, such as `+`, `-`, `*` and `/`. 
 
 ```sh
 >> let a = 10;
@@ -49,7 +62,7 @@ You can define variables using `let` keyword. Supported number types are integer
 
 ### If expressions
 
-You can use `if` and `else` keywords for conditional expressions. The final value in an executed block are returned from the expression.
+You can use `if` and `else` keywords for conditional expressions. The last value in an executed block are returned from the expression.
 
 ```sh
 >> let a = 10;
@@ -61,7 +74,7 @@ You can use `if` and `else` keywords for conditional expressions. The final valu
 
 ### Functions and closures
 
-You can define functions using `fn` keyword. All functions are closures in Monkey, so you must use `let` along with `fn` to bind a closure to a variable. Closures enclose defined environments and are executed along with the environments (e.g. variables) when called. The final value in an executed function body are returned as a return value.
+You can define functions using `fn` keyword. All functions are closures in Monkey and you must use `let` along with `fn` to bind a closure to a variable. Closures enclose an environment where they are defined, and are evaluated in *the* environment when called. The last value in an executed function body are returned as a return value.
 
 ```sh
 >> let multiply = fn(x, y) { x * y };
@@ -81,7 +94,7 @@ You can define functions using `fn` keyword. All functions are closures in Monke
 
 ### Strings
 
-You can build strings using a pair of double quotes `""`. Strings are values just like numbers. You can concatenate strings with `+` operator.
+You can build strings using a pair of double quotes `""`. Strings are immutable values just like numbers. You can concatenate strings with `+` operator.
 
 ```sh
 >> let makeGreeter = fn(greeting) { fn(name) { greeting + " " + name + "!" } };
@@ -92,7 +105,7 @@ Hello John!
 
 ### Arrays
 
-You can build arrays using square brackets `[]`. Arrays can contain any type of values, such as even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax.
+You can build arrays using square brackets `[]`. Arrays can contain any type of values, such as integers, strings, even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax.
 
 ```sh
 >> let myArray = ["Thorsten", "Ball", 28, fn(x) { x * x }];
